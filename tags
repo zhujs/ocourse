@@ -1,0 +1,50 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+BeautifulSoup	utility.py	/^	BeautifulSoup = lambda page: BeautifulSoup_( page, 'html.parser' )$/;"	v
+BeautifulSoup	utility.py	/^	BeautifulSoup = lambda page: BeautifulSoup_( page, 'htmllib' )$/;"	v
+DownloadError	downloader.py	/^class DownloadError( BaseException ):$/;"	c
+DownloadThread	downloader.py	/^class DownloadThread( threading.Thread ):$/;"	c
+ExternalDownloader	downloader.py	/^class ExternalDownloader( object ):$/;"	c
+NativeDownloader	downloader.py	/^class NativeDownloader( object ):$/;"	c
+ProgressBar	downloader.py	/^class ProgressBar( object ):$/;"	c
+TestDownloaderClass	Test/downloader_test.py	/^class TestDownloaderClass( unittest.TestCase ):$/;"	c
+TestDownloaderClass	Test/progressBar_test.py	/^class TestDownloaderClass( unittest.TestCase ):$/;"	c
+TestUtilityFunction	Test/utility_test.py	/^class TestUtilityFunction( unittest.TestCase ):$/;"	c
+WgetDownloader	downloader.py	/^class WgetDownloader( ExternalDownloader ):$/;"	c
+__init__	downloader.py	/^	def __init__( self , session , task_queue ):$/;"	m	class:NativeDownloader
+__init__	downloader.py	/^	def __init__( self , session, tools_name ):$/;"	m	class:ExternalDownloader
+__init__	downloader.py	/^	def __init__(self, maxValue , prefix='', promptedChar='*', fd=sys.stderr ):$/;"	m	class:ProgressBar
+__init__	downloader.py	/^	def __init__(self, session, tools ):$/;"	m	class:WgetDownloader
+__init__	downloader.py	/^	def __init__(self,session,  task_queue ):$/;"	m	class:DownloadThread
+_characterNum_default	downloader.py	/^	_characterNum_default = 40$/;"	v	class:ProgressBar
+_create_command	downloader.py	/^	def _create_command( self, url, filename ):$/;"	m	class:ExternalDownloader
+_create_command	downloader.py	/^	def _create_command( self, url, filename ):$/;"	m	class:WgetDownloader
+download	downloader.py	/^	def download( self, url, path, name ):$/;"	m	class:ExternalDownloader
+download	downloader.py	/^	def download( url, path, name ):$/;"	m	class:NativeDownloader
+download_completed	downloader.py	/^	def download_completed( self ):$/;"	m	class:DownloadThread
+finish	downloader.py	/^	def finish( self ):$/;"	m	class:ProgressBar
+format_line	downloader.py	/^	def format_line( self ):$/;"	m	class:ProgressBar
+get_downloader	downloader.py	/^def get_downloader( arg, session ):$/;"	f
+get_url_page	utility.py	/^def get_url_page( session, url):$/;"	f
+main	noer.py	/^def main():$/;"	f
+missed_package	noer.py	/^missed_package = []$/;"	v
+msg	noer.py	/^		msg =  msg + ' ' + package$/;"	v
+msg	noer.py	/^	msg = 'Module{0} required for running the script: [' #os.linesep $/;"	v
+package	noer.py	/^			package = 'beautifulsoup4'$/;"	v
+parse_argument	noer.py	/^def parse_argument( args=None ):$/;"	f
+parse_page	utility.py	/^def parse_page( page ):$/;"	f
+required_package	noer.py	/^required_package = [ 'requests', 'bs4' ]  $/;"	v
+run	downloader.py	/^	def run( self ):$/;"	m	class:DownloadThread
+setUp	Test/downloader_test.py	/^	def setUp( self ):$/;"	m	class:TestDownloaderClass
+setUp	Test/progressBar_test.py	/^	def setUp( self ):$/;"	m	class:TestDownloaderClass
+setUp	Test/utility_test.py	/^	def setUp( self ):$/;"	m	class:TestUtilityFunction
+show	downloader.py	/^	def show( self, currentValue ):$/;"	m	class:ProgressBar
+test_downloadThread	Test/downloader_test.py	/^	def test_downloadThread( self ):$/;"	m	class:TestDownloaderClass
+test_get_url_page	Test/utility_test.py	/^	def test_get_url_page( self ):$/;"	m	class:TestUtilityFunction
+test_parse_page	Test/utility_test.py	/^	def test_parse_page( self ):$/;"	m	class:TestUtilityFunction
+test_progressbar	Test/progressBar_test.py	/^	def test_progressbar( self ):$/;"	m	class:TestDownloaderClass
+test_wgetDownloader	Test/downloader_test.py	/^	def test_wgetDownloader( self ):$/;"	m	class:TestDownloaderClass

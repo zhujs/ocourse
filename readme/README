@@ -1,0 +1,12 @@
+
+This is a Python script for downloading the learning material at http://open.163.com, inspired by https://github.com/jplehmann/coursera.
+
+Usage of the script:
+	python noer.py [-h] [-w] url
+
+	positional arguments:
+	  url         The url of the learning material at open.163.com
+  
+	optional arguments:
+	  -h, --help  show this help message and exit
+	  -w, --wget  Use the wget tools to download

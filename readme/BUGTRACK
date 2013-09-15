@@ -1,0 +1,7 @@
+Sat Sep 14 13:32:49 CST 2013:
+	Fix unicode problem in the ProgressBar class
+
+	The format line in progress bar should be unicode
+		
+
+
