@@ -1,9 +1,11 @@
 
 import threading, subprocess
-import logging
+import log
 import requests
 import Queue
 import os,sys
+
+logger = log.getLogger( 'ocourse' )
 
 class DownloadError( BaseException ):
 	"""Class to be thrown if error occurs when downloading"""
@@ -51,7 +53,7 @@ class ProgressBar( object ):
 
 	
 
-
+'''
 class DownloadThread( threading.Thread ):
 	"""Thread used for downloading the video"""
 	def __init__(self,session,  task_queue ):
@@ -98,7 +100,7 @@ class DownloadThread( threading.Thread ):
 				bar.finish()
 				reply.close()
 				self.completed = True
-
+'''
 				
 class NativeDownloader( object ):
 	def __init__( self , session , task_queue ):
@@ -118,27 +120,33 @@ class NativeDownloader( object ):
 				# get the content length
 				content_length = reply.headers.get( 'content-length' )
 				chunk_size = 2**20
+
 				save_path = os.path.join( path, name)
 				if os.path.exists( save_path ):
-					logging.error("Skip %s: the file already exists" % save_path )
-					return True	
+					# if the size of the existing file is identical 
+					if os.path.getsize( save_path ) == content_length:
+						logger.info("Skipping %s: file exists" % name )
+						return True
+				
 
 				assert isinstance( name, unicode )
 				bar = ProgressBar( int(content_length), name  )
 
+				# read the data and write to the file
 				with open( save_path, 'wb' ) as fileObj:
-					data = reply.raw.read( chunk_size )
-					received_length = len(data)
+					received_length = 0
 
-					while data != '':
-						fileObj.write( data )
-						received_length += len( data )
+					for data in reply.iter_content( chunk_size ):
+						if data == '':
+							break
+						received_length += len(data)
 						bar.show( received_length )
-						data = reply.raw.read( chunk_size )
+						fileObj.write( data )
 
 				bar.finish()
 				reply.close()
 				return True
+
 
 
 		
@@ -158,10 +166,13 @@ class ExternalDownloader( object ):
 		try:
 			exitcode = subprocess.call( command )
 		except OSError as e:
-			raise DownloadError( e )
+			raise DownloadError(e)
 		else:
-			return False if exitcode else True 
-		
+			if exitcode:
+				raise DownloadError('Error occurs:'
+						'exit code: %d' % exitcode)
+			else:
+				return True 
 
 
 class WgetDownloader( ExternalDownloader ):
@@ -178,7 +189,7 @@ def get_downloader( arg, session ):
 	task_queue = Queue.Queue()
 
 	if arg.wget:
-		pass
+		return WgetDownloader( session, 'wget' )	
 	else:
 		return NativeDownloader( session, task_queue )
 

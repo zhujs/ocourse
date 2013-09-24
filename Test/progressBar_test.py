@@ -8,7 +8,7 @@ class TestDownloaderClass( unittest.TestCase ):
 	
 	def setUp( self ):
 		self.maxValue = 300
-		self.bar = downloader.ProgressBar( self.maxValue ) 
+		self.bar = downloader.ProgressBar( self.maxValue, 'c' * 40 ) 
 
 	def test_progressbar( self ):
 		

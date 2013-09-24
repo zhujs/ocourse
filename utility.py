@@ -1,7 +1,7 @@
 
 import requests
-import logging
-import re
+import log
+import re, os
 
 from bs4 import BeautifulSoup as BeautifulSoup_
 
@@ -13,6 +13,29 @@ else:
 	BeautifulSoup = lambda page: BeautifulSoup_( page, 'htmllib' )
 
 
+logger = log.getLogger('ocourse')
+
+def _get_saved_directory( url ):
+	"""Get the saved directory from the url"""
+
+	result = urlparse.urlparse( url )
+	basename = os.path.basename( result.path )
+
+	return os.path.splitext( basename )[0]
+
+def _get_saved_path( arg ):
+	"""Get the saved path for the resource"""
+
+	# get the valid saved path
+	if arg.saved_path is None:
+		arg.saved_path = os.path.join( os.getcwd(),
+				_get_saved_directory( arg.url ) )
+
+	if not os.path.exists( arg.saved_path ):
+		os.mkdir( arg.saved_path )
+		
+	assert os.path.isdir( arg.saved_path )
+	return arg.saved_path
 
 def get_url_page( session, url):
 	"""Make a HTTP get request for the specific url, return the html text as string"""
@@ -23,12 +46,10 @@ def get_url_page( session, url):
 		reply.raise_for_status()
 	except ( requests.exceptions.InvalidSchema, 
 			requests.exceptions.InvalidURL ) as e:
-		logging.error( "Invalid URL for download: %s", url )
-		return
+		logger.error( "Invalid URL for download: %s", url )
 
 	except requests.exceptions.HTTPError as e:
-		logging.error( "Error occurs when getting the page %s: %s", url, e )
-		return
+		logger.error( "Error occurs when getting the page ==> %s, %s", url, e )
 	else:
 		return reply.text
 
@@ -38,7 +59,7 @@ def _format_filename( prefix, name ):
 	matchObj = re.search( r'\d+', prefix )	
 	
 	if matchObj is None:
-		logging.error( "Error occurs when formating the file name %s",
+		logger.info( "Cannot format the file name %s",
 				prefix + name )
 		return prefix + name
 
@@ -58,7 +79,7 @@ def parse_page( page ):
 	tables = parser.find_all( 'table', id=re.compile('^list') )
 
 	if tables is None:
-		return
+		return [] 
 
 	downloadList = []
 	try:
@@ -76,9 +97,10 @@ def parse_page( page ):
 
 			downloadList.append( (name, href) )
 	except Exception as e:
-		logging.error('Error occurs when parsing: %s', e )
+		logger.error("Cannot find any resource to download for the given url")
+		return []
 	else:
-		return downloadList if len( downloadList ) else [] 
+		return downloadList 
 
 
 

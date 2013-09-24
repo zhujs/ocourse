@@ -1,5 +1,3 @@
-#! /usr/bin/evn python
-
 
 import sys
 
@@ -28,10 +26,15 @@ if len(missed_package) != 0:
 
 import argparse,os
 import requests
-import logging
+import urlparse
 
+import log
 import utility
 import downloader
+
+# get the script logger
+logger = log.getLogger( 'ocourse' )
+
 
 def parse_argument( args=None ):
 	"""Parse the arguments of the script"""
@@ -43,12 +46,29 @@ def parse_argument( args=None ):
 			dest='wget',
 			help='Use the wget tools to download.')
 
+	def is_valid_path( string ):
+		# check for a valid directory
+		if os.path.exists( string ) and not os.path.isdir( string ):
+			raise argparse.ArgumentTypeError( 
+					'The saved path should '
+					'be a directory.')
+		return string
+
+	parser.add_argument('-p', '--path',
+			action='store',
+			default=None,
+			type=is_valid_path,
+			dest='saved_path',
+			help='the saved path of the learning materials' )
+
 	parser.add_argument('url',
 			action='store',
-			help='The url of the learning material at open.163.com' )
+			help='The required url of the learning material at open.163.com' )
 			
 
 	return parser.parse_args( args ) 
+
+
 
 
 def main():
@@ -59,22 +79,35 @@ def main():
 	page = utility.get_url_page( session, arg.url )
 
 	if page is None:
-		logging.info("Cannot get the url page.")
+		return
 	else:
+
+		path = utility._get_saved_path( arg )
+
 		# parse the page to obtain a download list
 		downloadList = utility.parse_page( page )
+
+		if len( downloadList ) == 0:
+			sys.exit(1)
 
 		dler = downloader.get_downloader( arg, session )
 
 		assert dler is not None, 'No downloader!'
 
+		# download all the resource in the parsed list
+
+		logger.info( "Download start")
 		for name, href in downloadList:
 			try:
-				dler.download( href, os.getcwd(), name )
-			except downloader.DownloadError:
-				logging.info("Cannot download %s --> %s", name, href )
+				if href == '':
+					logger.info("Skipping %s: cannot find valid url", name)
+				else:
+					dler.download( href, path, name )
 
-		logging.info( "Download complete.")
+			except downloader.DownloadError as e:
+				logger.error("Cannot download %s --> %s, %s", name, href, e )
+
+		logger.info( "Download completed")
 
 
 
