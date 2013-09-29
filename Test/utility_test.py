@@ -29,3 +29,9 @@ class TestUtilityFunction( unittest.TestCase ):
 		page = utility.get_url_page( self.session, self.noDownloadUrl ) 
 		downloadList = utility.parse_page( page )
 		self.assertEqual( downloadList[0], ( u'001_逻辑学的对象与内容', '' ) )
+
+	def test_get_string_width( self ):
+		self.assertEquals( utility.get_string_width(u'中文'), 4 )
+		self.assertEquals( utility.get_string_width(u'English'), 7 )
+		self.assertEquals( utility.get_string_width(u''), 0 )
+		self.assertEquals( utility.get_string_width(u'中文Eng'), 7 )

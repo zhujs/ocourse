@@ -1,11 +1,15 @@
 
-import threading, subprocess
+import threading, subprocess, time
+import signal, fcntl, termios, array
 import log
 import requests
 import Queue
 import os,sys
+import utility
 
 logger = log.getLogger( 'ocourse' )
+
+
 
 class DownloadError( BaseException ):
 	"""Class to be thrown if error occurs when downloading"""
@@ -15,43 +19,98 @@ class DownloadError( BaseException ):
 class ProgressBar( object ):
 	"""A progress bar to show the download progress"""
 
-	_characterNum_default = 40
-
+	_default_term_width = 80
 	def __init__(self, maxValue , prefix='', promptedChar='*', fd=sys.stderr ):
+		if maxValue < 0:
+			raise ValueError('Max value out of range')
 		self.maxValue= maxValue 
 		self.currentValue = 0 
-		self.characterNum = self._characterNum_default 
 		self.prefix= prefix
 		self.promptedChar = promptedChar 
 		self.fd = fd
+		self.barString = u'{prefix} {perc:>6.1%} |{chars}|' 
+		self.finished = False
 
+		self.signal_set = False
+		try:
+			self._handle_resize()
+			signal.signal( signal.SIGWINCH, self._handle_resize )
+			
+			self.signal_set = True
+		except (SystemExit, KeyboardInterrupt): raise
+		except:
+			self.term_width = self._default_term_width
+
+		# how many time we need to update the progress bar
+		self.count_intervals = max( 100, self.term_width )
+		self.next_update = 0
+
+		self.update_interval = self.maxValue / self.count_intervals
+
+
+	def _handle_resize( self, signum=None, frame=None ):
+		"""Handler to window size change"""
+		h,w = array.array('h',fcntl.ioctl(self.fd,termios.TIOCGWINSZ, '\0' * 8))[:2]
+		self.term_width = w
+		self.fd.write( self.format_line() + '\r' )
+	
+	def _need_update( self ):
+		"""Whether we need to update the progress bar"""
+		if self.currentValue >= self.next_update or self.finished:
+			return True
+
+		return False 
 
 	def show( self, currentValue ):
 		"""Show the current status of progress bar"""
+
+		if not 0 <= currentValue <= self.maxValue :
+			raise ValueError( 'Value out of range' )
+		
 		self.currentValue = currentValue
-		self.fd.write( self.format_line() + '\r' )
+
+		if self._need_update():
+			self.fd.write( self.format_line() + '\r' )
 
 		
 	def finish( self ):
+		self.finished = True
 		self.show( self.maxValue )
 		self.fd.write( '\n' )
 		self.currentValue = 0 
+
+		if self.signal_set:
+			signal.signal( signal.SIGWINCH, signal.SIG_DFL )
 	
 
 	def format_line( self ):
 		"""Formats the current status of progress bar to string"""
-		bar = u'{0} {1}% |{2}{3}|' 
 
-		percentage = round( self.currentValue / float( self.maxValue ) , 2 )
+		percentage = self.currentValue * 1.0 / self.maxValue
 
-		nCompletedChar = int( percentage * self.characterNum )
-		return bar.format( self.prefix, 
-				percentage*100,
-				self.promptedChar * nCompletedChar,
-				' ' * ( self.characterNum - nCompletedChar ) )
+		# the minimum bar is : prefix + percentage + |*****|
+		minimum_bar = self.barString.format( prefix=self.prefix,
+				perc=percentage, 
+				chars=self.promptedChar * 5 )
+
+		if utility.get_string_width( minimum_bar ) < self.term_width:
+			temp = self.barString.format( prefix=self.prefix,
+					perc=percentage, 
+					chars='')
+
+			# calculate the length of maximum prompted chars 
+			width = self.term_width - utility.get_string_width( temp ) 
+		else:
+			width = self.term_width
+
+		# how many prompted chars should be print  
+		markers = int( width * percentage ) * self.promptedChar
+		return self.barString.format( prefix=self.prefix,
+				perc=percentage, 
+				chars=markers.ljust(width,' '))
 
 
-	
+
 
 '''
 class DownloadThread( threading.Thread ):
@@ -124,10 +183,9 @@ class NativeDownloader( object ):
 				save_path = os.path.join( path, name)
 				if os.path.exists( save_path ):
 					# if the size of the existing file is identical 
-					if os.path.getsize( save_path ) == content_length:
+					if os.path.getsize( save_path ) == int( content_length ):
 						logger.info("Skipping %s: file exists" % name )
 						return True
-				
 
 				assert isinstance( name, unicode )
 				bar = ProgressBar( int(content_length), name  )
