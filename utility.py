@@ -1,7 +1,8 @@
 
 import requests
+import urlparse
 import log
-import re, os
+import re, os, locale
 
 from bs4 import BeautifulSoup as BeautifulSoup_
 
@@ -35,7 +36,10 @@ def _get_saved_path( arg ):
 		os.mkdir( arg.saved_path )
 		
 	assert os.path.isdir( arg.saved_path )
-	return arg.saved_path
+
+	# return a Unicode path name object
+	# encodes it with the local encoding of the system
+	return unicode( arg.saved_path, locale.getdefaultlocale()[1] )
 
 def get_url_page( session, url):
 	"""Make a HTTP get request for the specific url, return the html text as string"""
@@ -55,6 +59,7 @@ def get_url_page( session, url):
 
 
 def _format_filename( prefix, name ):
+	"""Format the file name such as 001_XXXX"""
 	assert isinstance( prefix , unicode )
 	matchObj = re.search( r'\d+', prefix )	
 	
@@ -69,7 +74,6 @@ def _format_filename( prefix, name ):
 	return episode.zfill(3) + '_' + name
 
 
-
 def parse_page( page ):
 	"""Parse the resource page and get a download list""" 
 
@@ -77,11 +81,19 @@ def parse_page( page ):
 
 	# find all table tags in the html page (according to the structure of html page) 
 	tables = parser.find_all( 'table', id=re.compile('^list') )
+	downloadList = []
+
+	# find the courseware material download address
+	tag = parser.find( 'a', class_ ="download-kejian")
+	if tag is not None:
+		downloadList.append( 
+				( os.path.basename( tag.get('href') ), 
+					tag.get('href') )
+				)
 
 	if tables is None:
-		return [] 
+		return downloadList 
 
-	downloadList = []
 	try:
 		# get the table containing all the resources ( table with the id 'list2' )
 		allRows = tables[ len(tables)-1 ].find_all('tr')

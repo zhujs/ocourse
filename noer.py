@@ -85,19 +85,17 @@ def main():
 		path = utility._get_saved_path( arg )
 
 		# parse the page to obtain a download list
-		downloadList = utility.parse_page( page )
-
-		if len( downloadList ) == 0:
+		downloadedList = utility.parse_page( page )
+		
+		if len( downloadedList ) == 0:
 			sys.exit(1)
 
 		dler = downloader.get_downloader( arg, session )
-
 		assert dler is not None, 'No downloader!'
 
 		# download all the resource in the parsed list
-
 		logger.info( "Download start")
-		for name, href in downloadList:
+		for name, href in downloadedList:
 			try:
 				if href == '':
 					logger.info("Skipping %s: cannot find valid url", name)

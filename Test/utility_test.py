@@ -23,7 +23,7 @@ class TestUtilityFunction( unittest.TestCase ):
 	def test_parse_page( self ):
 		page = utility.get_url_page( self.session, self.url )
 		downloadList = utility.parse_page( page )
-		self.assertEquals( len(downloadList), 24 )
+		self.assertEquals( len(downloadList), 25 )
 		self.assertEqual( downloadList[0], ( u'001_课程简介及算法分析', 'http://mov.bn.netease.com/mobilev/2011/5/4/V/S72MEK54V.mp4' ) )
 		
 		page = utility.get_url_page( self.session, self.noDownloadUrl ) 
