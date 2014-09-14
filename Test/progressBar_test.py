@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import unittest
 import time
+import mock
 
 from ocourse import downloader 
 

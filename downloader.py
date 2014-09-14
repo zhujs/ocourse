@@ -1,4 +1,4 @@
-import threading, subprocess, time
+import subprocess
 import signal, fcntl, termios, array
 import log
 import requests
@@ -158,7 +158,8 @@ class DownloadThread( threading.Thread ):
                 reply.close()
                 self.completed = True
 '''
-                
+
+
 class NativeDownloader( object ):
     def __init__( self , session , task_queue ):
         self.session = session
@@ -176,6 +177,11 @@ class NativeDownloader( object ):
             else:
                 # get the content length
                 content_length = reply.headers.get( 'content-length' )
+
+                # the content has at least one byte
+                if content_length <=0:
+                    return False
+
                 chunk_size = 2**20
 
                 save_path = os.path.join( path, name)
@@ -225,8 +231,7 @@ class ExternalDownloader( object ):
             raise DownloadError(e)
         else:
             if exitcode:
-                raise DownloadError('Error occurs:'
-                        'exit code: %d' % exitcode)
+                return False
             else:
                 return True 
 
@@ -247,7 +252,7 @@ def get_downloader( arg, session ):
     if arg.wget:
         return WgetDownloader( session, 'wget' )    
     else:
-        return NativeDownloader( session, task_queue )
+        return NativeDownloader( session, task_queue)
 
 
 
